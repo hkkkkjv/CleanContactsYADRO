@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">CleanContactsYADRO</string>
+    <string name="contacts_empty">Список контактов пуст</string>
+    <string name="error_loading_contacts">Не удалось загрузить контакты: %s</string>
+
+    <string name="dedup_button">Удалить дубли</string>
+    <string name="dedup_success">Дубликаты удалены</string>
+    <string name="dedup_no_duplicates">Дубликаты не найдены</string>
+    <string name="dedup_error">Ошибка удаления дубликатов</string>
+    <string name="dedup_in_progress">Удаление дубликатов…</string>
+
+    <string name="error_service_unavailable">Сервис временно недоступен</string>
+    <string name="error_connecting_service">Ошибка подключения к сервису</string>
+
+    <string name="contact_no_phone">Нет номера</string>
+    <string name="screen_title">Контакты</string>
 </resources>
