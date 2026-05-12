@@ -6,5 +6,6 @@ import ru.kpfu.itis.cleancontacts.domain.model.DedupStatus
 
 interface ContactsRepository {
     fun getContacts(): Flow<List<Contact>>
+    fun invalidateCache()
     suspend fun deleteDuplicates(): DedupStatus
 }
