@@ -6,7 +6,6 @@ import ru.kpfu.itis.cleancontacts.data.util.ContactHasher
 import ru.kpfu.itis.cleancontacts.domain.model.Contact
 
 object ContactMapper {
-
     val CONTACT_PROJECTION = arrayOf(
         ContactsContract.Contacts._ID,
         ContactsContract.Contacts.LOOKUP_KEY,
@@ -14,26 +13,24 @@ object ContactMapper {
         ContactsContract.Contacts.HAS_PHONE_NUMBER
     )
 
-    fun mapCursorToContact(cursor: Cursor): Contact? {
-        return try {
-            val lookupKeyIndex = cursor.getColumnIndexOrThrow(ContactsContract.Contacts.LOOKUP_KEY)
-            val nameIndex = cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
-            val hasPhoneIndex = cursor.getColumnIndexOrThrow(ContactsContract.Contacts.HAS_PHONE_NUMBER)
+    fun mapRow(cursor: Cursor, indexes: ContactColumnIndexes, phone: String?): Contact? {
+        val lookupKey = cursor.getString(indexes.lookupKey) ?: return null
+        val displayName =
+            cursor.getString(indexes.displayName)?.takeIf { it.isNotBlank() } ?: return null
+        return Contact(
+            lookupKey = lookupKey,
+            displayName = displayName,
+            primaryPhone = phone,
+            fieldsHash = ContactHasher.generateHash(displayName, phone)
+        )
+    }
 
-            val lookupKey = cursor.getString(lookupKeyIndex) ?: return null
-            val displayName = cursor.getString(nameIndex)?.takeIf { it.isNotBlank() } ?: "Без имени"
-            val hasPhone = cursor.getInt(hasPhoneIndex) == 1
-
-            val fieldsHash = ContactHasher.generateHash(displayName, null, hasPhone)
-
-            Contact(
-                lookupKey = lookupKey,
-                displayName = displayName,
-                primaryPhone = null,
-                fieldsHash = fieldsHash
-            )
-        } catch (e: Exception) {
-            null
-        }
+    fun readIndexes(cursor: Cursor): ContactColumnIndexes {
+        return ContactColumnIndexes(
+            id = cursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID),
+            lookupKey = cursor.getColumnIndexOrThrow(ContactsContract.Contacts.LOOKUP_KEY),
+            displayName = cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY),
+            hasPhone = cursor.getColumnIndexOrThrow(ContactsContract.Contacts.HAS_PHONE_NUMBER)
+        )
     }
 }
