@@ -19,7 +19,8 @@ import ru.kpfu.itis.cleancontacts.presentation.viewmodel.ContactsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactsScreen(
-    viewModel: ContactsViewModel = hiltViewModel()
+    viewModel: ContactsViewModel = hiltViewModel(),
+    onOpenSettings: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -36,6 +37,8 @@ fun ContactsScreen(
                     }
                     snackbarHostState.showSnackbar(message)
                 }
+
+                is ContactsEffect.NavigateToSettings -> onOpenSettings()
             }
         }
     }

@@ -121,7 +121,12 @@ fun ContactsContent(
 
                 else -> {
                     LazyColumn(
-                        contentPadding = PaddingValues(bottom = 80.dp, start = 12.dp, end = 12.dp, top = 8.dp),
+                        contentPadding = PaddingValues(
+                            bottom = 80.dp,
+                            start = 12.dp,
+                            end = 12.dp,
+                            top = 8.dp
+                        ),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         groupedContacts.forEach { section ->
@@ -132,7 +137,10 @@ fun ContactsContent(
                                     Text(
                                         text = section.header,
                                         style = MaterialTheme.typography.titleMedium,
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                        modifier = Modifier.padding(
+                                            horizontal = 12.dp,
+                                            vertical = 8.dp
+                                        )
                                     )
                                 }
                             }
