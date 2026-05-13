@@ -9,7 +9,7 @@ import ru.kpfu.itis.cleancontacts.domain.model.DedupStatus
 sealed interface ContactsIntent {
     object LoadContacts : ContactsIntent
     object DeleteDuplicates : ContactsIntent
-
+    object PermissionDenied : ContactsIntent
     data class ContactsLoaded(val contacts: ImmutableList<Contact>) : ContactsIntent
     data class DedupFinished(val status: DedupStatus) : ContactsIntent
     data class ErrorOccurred(
