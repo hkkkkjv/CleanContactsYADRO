@@ -1,18 +1,15 @@
 package ru.kpfu.itis.cleancontacts.domain.model
 
-enum class DedupStatus {
-    SUCCESS,
-    NO_DUPLICATES,
-    ERROR;
+enum class DedupStatus(val code: Int) {
+    SUCCESS(0),
+    NO_DUPLICATES(1),
+    ERROR(2);
 
     companion object {
-        const val CODE_SUCCESS = 0
-        const val CODE_NO_DUPLICATES = 1
-        const val CODE_ERROR = 2
-
-        fun statusFromCode(code: Int): DedupStatus = when (code) {
-            CODE_SUCCESS -> SUCCESS
-            CODE_NO_DUPLICATES -> NO_DUPLICATES
+        fun fromCode(code: Int): DedupStatus = when (code) {
+            SUCCESS.code -> SUCCESS
+            NO_DUPLICATES.code -> NO_DUPLICATES
+            ERROR.code -> ERROR
             else -> ERROR
         }
     }

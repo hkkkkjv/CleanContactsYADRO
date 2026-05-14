@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,31 +40,40 @@ class ContactsViewModel @Inject constructor(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val effect: SharedFlow<ContactsEffect> = _effect.asSharedFlow()
+    private var contactsJob: Job? = null
 
     init {
-        handleIntent(ContactsIntent.LoadContacts)
+        loadContacts()
     }
 
     fun handleIntent(intent: ContactsIntent) {
-        viewModelScope.launch {
-            _state.update { currentState -> reducer.reduce(currentState, intent) }
+        _state.update { current -> reducer.reduce(current, intent) }
 
-            when (intent) {
-                is ContactsIntent.LoadContacts -> loadContacts()
-                is ContactsIntent.DeleteDuplicates -> startDeduplication()
-                else -> Unit
+        when (intent) {
+            is ContactsIntent.LoadContacts -> loadContacts()
+            is ContactsIntent.DeleteDuplicates -> startDeduplication()
+            is ContactsIntent.PermissionDenied -> viewModelScope.launch {
+                _effect.emit(
+                    ContactsEffect.NavigateToSettings
+                )
             }
+
+            else -> Unit
         }
     }
 
     private fun loadContacts() {
-        viewModelScope.launch {
+        contactsJob?.cancel()
+        contactsJob = viewModelScope.launch {
             getContactsUseCase()
                 .catch { e ->
+                    _state.update { current ->
+                        reducer.reduce(
+                            current,
+                            ContactsIntent.ErrorOccurred(R.string.error_loading_contacts)
+                        )
+                    }
                     _effect.emit(ContactsEffect.ShowSnackbar(R.string.error_loading_contacts))
-                    handleIntent(ContactsIntent.ErrorOccurred(
-                        R.string.error_loading_contacts,
-                    ))
                 }
                 .collect { contacts ->
                     handleIntent(ContactsIntent.ContactsLoaded(contacts.toImmutableList()))
@@ -75,7 +85,9 @@ class ContactsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val status = deleteDuplicatesUseCase()
-                handleIntent(ContactsIntent.DedupFinished(status))
+                _state.update { current ->
+                    reducer.reduce(current, ContactsIntent.DedupFinished(status))
+                }
                 val effect = when (status) {
                     DedupStatus.SUCCESS -> ContactsEffect.ShowSnackbar(R.string.dedup_success)
                     DedupStatus.NO_DUPLICATES -> ContactsEffect.ShowSnackbar(R.string.dedup_no_duplicates)
